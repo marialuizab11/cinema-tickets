@@ -32,3 +32,33 @@
 	font-weight: 700;
 	color: var(--primary-color);
 }
+
+.logout-button {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 24px;
+	background-color: transparent;
+	border: 2px solid #d32f2f;
+	border-radius: 50px;
+	color: #d32f2f;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+	background-color: #d32f2f;
+	color: white;
+	transform: translateY(-2px);
+	box-shadow: 0px 4px 8px rgba(211, 47, 47, 0.2);
+}
+
+.logout-button i {
+	font-size: 1rem;
+}
+
+.logout-text {
+	font-weight: 600;
+	font-size: 1rem;
+	font-family: sans-serif;
+}
