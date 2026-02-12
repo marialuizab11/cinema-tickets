@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+
+    constructor(private router: Router) {}
+
     private apiUrl = 'http://localhost:3000/auth'
 
     async login(email: string, password: string): Promise<{success: boolean; message?: string}>{
@@ -41,6 +45,7 @@ export class AuthService {
 
     logout(): void {
         localStorage.removeItem('token');
+        this.router.navigate(['']);
     }
 
     getToken(): string | null {
