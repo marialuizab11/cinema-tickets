@@ -1,0 +1,150 @@
+.auth-title {
+    font-family: 'Courier New', monospace;
+    color: var(--secondary-color);
+    font-weight: 600; 
+    font-size: 2.7rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem; 
+    width: 100%;
+}
+
+.form-col {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+}
+
+.error-messages small {
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.register-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 3px 7px 0px rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem 3rem; 
+    background: white;
+}
+
+.register {
+    margin-top: 1rem;       
+    display: flex;          
+    justify-content: center; 
+    font-family: 'Trebuchet MS', sans-serif; 
+    font-size: 0.95rem;
+    color: #333;            
+}
+
+.register-link {
+    color: var(--secondary-color);        
+    font-weight: bold;
+    margin-left: 0.5rem;           
+    transition: color 0.2s ease;
+}
+
+.register-link:hover {
+    text-decoration: underline;    
+    color: #eddf24;              
+}
+
+.page-box { 
+    width: 100vw;
+    height: 75vh;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.register-box {
+    width: 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.img-box {
+    width: 55%;
+    height: 100%;
+    background: url('/popcorn.png');
+    background-size: 7%;
+    background-position: 8%;
+    clip-path: polygon(
+        50% 0%,
+        0% 100%,
+        0% 100%,
+        100% 100%,
+        100% 0%
+    );
+    filter: 
+        brightness(0) 
+        saturate(100%) 
+        invert(70%) 
+        sepia(67%) 
+        saturate(892%) 
+        hue-rotate(343deg) 
+        brightness(103%) 
+        contrast(101%);
+}
+
+.form-login { 
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.input-group {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-login input {
+    width: 100%;
+    height: 45px;
+    border: 1px solid #ccc;
+    border-radius: 8px; 
+    padding: 0 15px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    margin-top: 5px;
+    outline: none;
+}
+
+.form-login input:focus {
+    border: 2px solid var(--secondary-color);
+}
+
+.form-login input.ng-invalid.ng-touched {
+    border-color: var(--danger);
+    border-width: 2px;
+}
+
+button {
+    background-color: #e50914;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #b20710;
+}
+
+button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
