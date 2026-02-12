@@ -4,11 +4,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { AuthMock } from '../../auth/mock/auth-mock';
 import Swal from 'sweetalert2';
+import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, NgxMaskDirective, NgxMaskPipe],
   template: `
   <div class="page-box">
     <div class="register-box"> 
@@ -16,7 +17,7 @@ import Swal from 'sweetalert2';
         <h1 class="auth-title">CADASTRO</h1> <div>
           <form class="form-login" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
             
-            <label>Nome:</label>
+          <label>Nome<span class="required">*</span>:</label>
             <div class="input-group">
               <input type="text" placeholder="Digite seu nome completo" formControlName="nome" [class.loading]="isLoading">
               <div *ngIf="nome?.invalid && nome?.touched" class="error-messages">
@@ -29,19 +30,29 @@ import Swal from 'sweetalert2';
               <div class="form-col">
                 <label>Celular:</label>
                 <div class="input-group">
-                  <input type="text" placeholder="(81) 99999-9999" formControlName="celular" [class.loading]="isLoading">
-                  <div *ngIf="celular?.invalid && celular?.touched" class="error-messages">
-                    <small *ngIf="celular?.errors?.['required']">Obrigatório!</small>
-                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="(81) 99999-9999"
+                    mask="(00) 00000-0000" 
+                    formControlName="celular" 
+                    [class.loading]="isLoading"
+                  >
                 </div>
               </div>
+
               <div class="form-col">
-                <label>CPF:</label>
+                <label>CPF<span class="required">*</span>:</label>
                 <div class="input-group">
-                  <input type="text" placeholder="000.000.000-00" formControlName="cpf" [class.loading]="isLoading">
+                  <input 
+                    type="text" 
+                    placeholder="000.000.000-00" 
+                    mask="000.000.000-00"
+                    formControlName="cpf" 
+                    [class.loading]="isLoading"
+                  >
                   <div *ngIf="cpf?.invalid && cpf?.touched" class="error-messages">
-                    <small *ngIf="cpf?.errors?.['required']">Obrigatório!</small>
-                    <small *ngIf="cpf?.errors?.['pattern']">11 números!</small>
+                    <small *ngIf="cpf?.errors?.['required']">CPF é obrigatório!</small>
+                    <small *ngIf="cpf?.errors?.['pattern']">CPF deve ter 11 números</small>
                   </div>
                 </div>
               </div>
@@ -49,22 +60,23 @@ import Swal from 'sweetalert2';
 
             <div class="form-row">
               <div class="form-col">
-                <label>E-mail:</label>
+                <label>E-mail<span class="required">*</span>:</label>
                 <div class="input-group">
                   <input type="email" placeholder="tickets@email.com" formControlName="email" [class.loading]="isLoading">
                   <div *ngIf="email?.invalid && email?.touched" class="error-messages">
-                    <small *ngIf="email?.errors?.['required']">Obrigatório!</small>
-                    <small *ngIf="email?.errors?.['email']">Inválido!</small>
+                    <small *ngIf="email?.errors?.['required']">O e-mail é obrigatório!</small>
+                    <small *ngIf="email?.errors?.['email']">Email inválido.</small>
                   </div>
                 </div>
               </div>
+
               <div class="form-col">
-                <label>Senha:</label>
+                <label>Senha<span class="required">*</span>:</label>
                 <div class="input-group">
                   <input type="password" placeholder="••••••••••" formControlName="password" [class.loading]="isLoading">
                   <div *ngIf="password?.invalid && password?.touched" class="error-messages">
-                    <small *ngIf="password?.errors?.['required']">Obrigatória!</small>
-                    <small *ngIf="password?.errors?.['minlength']">Mín. 6 carac.!</small>
+                    <small *ngIf="password?.errors?.['required']">A senha é obrigatória!</small>
+                    <small *ngIf="password?.errors?.['minlength']">Mínimo de 6 caracteres</small>
                   </div>
                 </div>
               </div>
@@ -84,6 +96,7 @@ import Swal from 'sweetalert2';
   `,
   styleUrl: './register.css',
 })
+
 export class Register {
   private authService = inject(AuthMock);
   private router = inject(Router);
@@ -95,7 +108,7 @@ export class Register {
       nome: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      celular: ['', [Validators.required]],
+      celular: [''],
       cpf: ['', [Validators.required, Validators.pattern(/^[0-9]{11}$/)]],
       role: ['CLIENT']
     });

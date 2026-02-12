@@ -148,3 +148,9 @@ button:disabled {
     background-color: #666;
     cursor: not-allowed;
 }
+
+.required {
+    color: var(--danger, #ff4d4d);
+    margin-left: 2px;
+    font-weight: bold;
+}
