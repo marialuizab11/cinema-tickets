@@ -98,7 +98,7 @@ export class Login {
           icon: 'error',
           title: 'Ops...',
           text: this.errorMsg || 'Falha no login',
-          confirmButtonColor: '#c91432',
+          confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--danger').trim(),
         });
       }
     } catch(e: any) {
@@ -107,7 +107,7 @@ export class Login {
         icon: 'error',
         title: 'Erro',
         text: 'Erro ao conectar com o servidor!',
-        confirmButtonColor: '#c91432',
+        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--danger').trim(),
       });
     } finally {
       this.isLoading = false;

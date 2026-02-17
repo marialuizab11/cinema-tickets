@@ -138,7 +138,7 @@ export class Register {
           icon: 'success',
           title: 'Sucesso!',
           text: 'Sua conta no Cinema Tickets foi criada!',
-          confirmButtonColor: '#c91432',
+          confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--sucess').trim(),
         });
         this.router.navigate(['/']); // Redireciona para o login
       } else {
@@ -148,7 +148,7 @@ export class Register {
           icon: 'error',
           title: 'Ops...',
           text: "Não foi possível realizar o cadastro",
-          confirmButtonColor: '#c91432',
+          confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--danger').trim(),
         });
         
       }
@@ -159,7 +159,7 @@ export class Register {
         icon: 'error',
         title: 'Erro',
         text: 'Não foi possível conectar ao servidor.',
-        confirmButtonColor: '#c91432',
+        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--danger').trim(),
       });
     } finally {
       this.isLoading = false;
