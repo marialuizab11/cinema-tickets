@@ -1,10 +1,10 @@
-package com.es.cinema.tickets.controller;
+package com.es.cinema.tickets.web.controller;
 
-import com.es.cinema.tickets.dto.AuthResponse;
-import com.es.cinema.tickets.dto.LoginRequest;
-import com.es.cinema.tickets.dto.LoginResponse;
-import com.es.cinema.tickets.dto.RegisterRequest;
-import com.es.cinema.tickets.service.AuthService;
+import com.es.cinema.tickets.application.service.AuthService;
+import com.es.cinema.tickets.web.dto.request.LoginRequest;
+import com.es.cinema.tickets.web.dto.request.RegisterRequest;
+import com.es.cinema.tickets.web.dto.response.LoginResponse;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,16 +19,13 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
+    public ResponseEntity<Void> register(
             @Valid @RequestBody RegisterRequest request
     ) {
-
-        AuthResponse response = authService.register(request);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
