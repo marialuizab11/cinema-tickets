@@ -23,7 +23,7 @@ class UserSeeder implements SeederInterface {
     @Override
     public void seed() {
         List<SeedUser> users = List.of(
-                new SeedUser("admin@local.dev", "Admin Dev", "99999999999", "81999990000", "admin", Role.ADMIN),
+                new SeedUser("admin@local.dev", "Admin Dev", "99999999999", "81999990000", "admin1", Role.ADMIN),
 
                 new SeedUser("user1@local.dev", "User One", "11111111111", "81999990001", "password1", Role.USER),
                 new SeedUser("user2@local.dev", "User Two", "22222222222", "81999990002", "password2", Role.USER),
