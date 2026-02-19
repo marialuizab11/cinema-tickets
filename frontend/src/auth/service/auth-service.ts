@@ -72,7 +72,7 @@ export class AuthService {
 
               return { 
                 success: false, 
-                message: data.message || data.errors?.[0]?.defaultMessage || 'Erro no servidor' 
+                message: data.detail || 'Erro no servidor' 
               };
             }
 
