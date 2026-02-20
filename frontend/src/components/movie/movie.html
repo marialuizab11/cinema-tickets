@@ -57,7 +57,7 @@
                 @for (session of filteredSessions; track session.id) {
                     <div class="session-metadata">
                         <div class="metadata-item">
-                            <!-- <span class="metadata-value">{{ session.sala.nome }}</span> -->
+                            <span class="metadata-value">{{ session.sala?.nome }}</span>
                             <div class="metadata-type">
                                 <span class="metadata-value-type">{{ session.tipo }}</span>
                             </div>
@@ -65,7 +65,7 @@
                         
                         <div class="metadata-item">
                             <button class="button-buy">
-                                <span class="button-buy-text">{{ session.horario }}</span>
+                                <span class="button-buy-text">{{ session.inicio | date: 'HH:mm' }}</span>
                                 <span class="button-buy-text-hover">Comprar</span>
                             </button>
                         </div>

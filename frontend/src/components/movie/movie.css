@@ -163,6 +163,10 @@
     margin-bottom: 10px;
 }
 
+.calendar-filter:hover {
+    border: 1px solid #fa9f18;
+}
+
 .session-list {
     display: flex;
     gap: 15px;

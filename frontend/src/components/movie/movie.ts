@@ -1,5 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MovieService } from '../../auth/service/movie-service';
+import { MoviesService } from '../../general-service/movies-service/movies-service';
+import { SessionService } from '../../general-service/session-service/session-service';
+import { RoomService } from '../../general-service/room-service/room-service';
 import { MovieModel } from '../../app/core/models/movie.model';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -18,50 +20,47 @@ export class Movie implements OnInit {
   
   sessions: SessionModel[] = [];
   filteredSessions: SessionModel[] = [];
-  currentDate: string = new Date().toISOString().split('T')[0];
+  currentDate: string = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
   constructor(
-    private movieService: MovieService,
+    private moviesService: MoviesService,
+    private sessionService: SessionService,
+    private roomService: RoomService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe(async (params) => {
       const movieId = Number(params.get('id'));
 
       if (movieId) {
-        this.movieService.getMovieById(movieId).subscribe({
-          next: (dadosDoFilme) => {
-            this.movie = dadosDoFilme;
-            console.log('Filme carregado com sucesso:', this.movie);
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error('Erro ao carregar detalhes do filme:', err);
-          }
-        });
+        this.movie = await this.moviesService.getMoviesById(movieId);
+        const todasAsSessoes = await this.sessionService.getSessions();
+        const todasAsSalas = await this.roomService.getRooms();
 
-        this.movieService.getSessionsByMovieId(movieId).subscribe({
-          next: (dadosDasSessoes) => {
-            console.log('Sessões carregadas com sucesso:', dadosDasSessoes);
-            this.sessions = dadosDasSessoes;
-            this.filterByDate(this.currentDate);
-            console.log('Sessões filtradas para a data atual:', this.filteredSessions);
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error('Erro ao carregar sessões do filme:', err);
-          }
-        });
+        this.sessions = todasAsSessoes
+          .filter(sessao => Number(sessao.filmeId) === movieId)
+          .map(sessao => ({
+            ...sessao,
+            sala: todasAsSalas.find(sala => Number(sala.id) === Number(sessao.salaId))
+          }));
+
+        console.log('Sessões prontas com a sala:', this.sessions);
+
+        this.filterByDate(this.currentDate);
+        this.cdr.detectChanges();
       }
-    })
+    });
   }
 
   filterByDate(evento: any) {
     const selectedDate = typeof evento === 'string' ? evento : evento.target.value;
     this.currentDate = selectedDate;
-    this.filteredSessions = this.sessions.filter(sessao => sessao.data === selectedDate);
+    
+    this.filteredSessions = this.sessions.filter(sessao => 
+      sessao.inicio.split('T')[0] === selectedDate
+    );
   }
 
   getPoster(): string {
