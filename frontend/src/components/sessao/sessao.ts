@@ -2,8 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { SessaoService } from '../../services/sessao.service';
-import { firstValueFrom } from 'rxjs';
+import { SessionService } from '../../general-service/session-service/session-service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -20,22 +19,19 @@ import Swal from 'sweetalert2';
           <div class="form-row">
             <div class="form-col">
               <label>Filme<span class="required">*</span></label>
-              
-                <ng-select 
-                  class="custom-select" 
-                  [items]="filmes" 
-                  bindLabel="titulo" 
-                  bindValue="id" 
-                  formControlName="filmeId"
-                  placeholder="Selecione um filme..."
-                  [clearable]="false">
-                </ng-select>
+              <ng-select 
+                class="custom-select" 
+                [items]="filmes" 
+                bindLabel="title" 
+                bindValue="id" 
+                formControlName="filmeId"
+                placeholder="Selecione um filme..."
+                [clearable]="false">
+              </ng-select>
             </div>
-            
           </div>
 
           <div class="form-row">
-
             <div class="form-col">
               <label>Horário<span class="required">*</span></label>
               <input type="time" formControlName="horario">
@@ -45,14 +41,14 @@ import Swal from 'sweetalert2';
               <label>Sala<span class="required">*</span></label>
               <select formControlName="salaId">
                 <option [value]="null" disabled>Selecione a sala</option>
-                <option *ngFor="let s of salas" [value]="s.id">Sala {{s.numero}} (Capacidade: {{s.capacidade}})</option>
+                <option *ngFor="let s of salas" [value]="s.id">
+                  Sala {{s.numero}} (Capacidade: {{s.capacidade}})
+                </option>
               </select>
             </div>
-
           </div>
 
           <div class="form-row">
-
             <div class="form-col">
               <label>Classificação Indicativa<span class="required">*</span></label>
               <select formControlName="classificacao">
@@ -72,7 +68,6 @@ import Swal from 'sweetalert2';
                 <option value="Legendado">Legendado</option>
               </select>
             </div>
-
           </div>
 
           <p class="section-title">PERÍODO DE EXIBIÇÃO</p>
@@ -102,7 +97,7 @@ import Swal from 'sweetalert2';
 })
 
 export class Sessao implements OnInit {
-  private service = inject(SessaoService);
+  private service = inject(SessionService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
@@ -114,7 +109,6 @@ export class Sessao implements OnInit {
   constructor() {
     this.sessaoForm = this.fb.group({
       filmeId: [null, Validators.required],
-      filmeTituloAux: ['', Validators.required],
       salaId: [null, Validators.required],
       horario: ['', Validators.required],
       tipo: ['Dublado', Validators.required],
@@ -124,22 +118,27 @@ export class Sessao implements OnInit {
     });
   }
 
-  get filmeTituloAux() { return this.sessaoForm.get('filmeTituloAux'); }
+  // Getters para validação
+  get filmeId() { return this.sessaoForm.get('filmeId'); }
   get salaId() { return this.sessaoForm.get('salaId'); }
   get horario() { return this.sessaoForm.get('horario'); }
-  get tipo() { return this.sessaoForm.get('tipo'); }
-  get classificacao() { return this.sessaoForm.get('classificacao'); }
   get dataInicio() { return this.sessaoForm.get('dataInicio'); }
   get dataFim() { return this.sessaoForm.get('dataFim'); }
 
-  ngOnInit() {
-    this.service.listarFilmes().subscribe(res => this.filmes = res);
-    this.service.listarSalas().subscribe(res => this.salas = res);
-  }
+  async ngOnInit() {
+    try {
+      const resFilmes = await this.service.listarFilmes();
+      console.log('Filmes recebidos:', resFilmes); // DEBUG: Veja se aparece no console do F12
+      this.filmes = resFilmes;
 
-  onFilmeSelected(event: any) {
-    const filme = this.filmes.find(f => f.titulo === event.target.value);
-    this.sessaoForm.get('filmeId')?.setValue(filme ? filme.id : null);
+      const resSalas = await this.service.listarSalas();
+      console.log('Salas recebidas:', resSalas);
+      this.salas = resSalas;
+
+      this.cdr.detectChanges(); // FORÇA A TELA A ATUALIZAR
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    }
   }
 
   async onSubmit() {
@@ -150,18 +149,22 @@ export class Sessao implements OnInit {
 
     if (this.isLoading) return;
 
-    const { dataInicio, dataFim, filmeTituloAux, ...dadosForm } = this.sessaoForm.value;
+    const { dataInicio, dataFim, ...dadosForm } = this.sessaoForm.value;
     
+    // Validação de data retroativa (conforme solicitado anteriormente)
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
     const dInicio = new Date(dataInicio + 'T00:00:00');
     const dFim = new Date(dataFim + 'T00:00:00');
 
+    if (dInicio < hoje) {
+      Swal.fire({ icon: 'warning', title: 'Data Inválida', text: 'Não é possível cadastrar sessões em datas passadas.', confirmButtonColor: '#c91432' });
+      return;
+    }
+
     if (dFim < dInicio) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Atenção',
-        text: 'A data final deve ser maior que a inicial.',
-        confirmButtonColor: '#c91432'
-      });
+      Swal.fire({ icon: 'warning', title: 'Atenção', text: 'A data final deve ser maior ou igual à inicial.', confirmButtonColor: '#c91432' });
       return;
     }
 
@@ -171,11 +174,17 @@ export class Sessao implements OnInit {
       
       while (dataAtual <= dFim) {
         const payload = {
-          ...dadosForm,
-          data: dataAtual.toISOString().split('T')[0]
+          filmeId: Number(this.sessaoForm.value.filmeId), 
+          salaId: Number(this.sessaoForm.value.salaId),
+          data: dataAtual.toISOString().split('T')[0],
+          horario: this.sessaoForm.value.horario,
+          classificacao: this.sessaoForm.value.classificacao
         };
 
-        await firstValueFrom(this.service.salvarSessao(payload));
+        console.log('Enviando para o Back-end:', payload);
+        
+        // Chamada await direta para o Service (sem firstValueFrom)
+        await this.service.salvarSessao(payload);
         dataAtual.setDate(dataAtual.getDate() + 1);
       }
 
@@ -189,13 +198,9 @@ export class Sessao implements OnInit {
       this.sessaoForm.reset({ tipo: 'Dublado', classificacao: 'Livre' });
 
     } catch (error: any) {
-      const msg = error.error?.detail || 'Erro ao comunicar com o servidor.';
-      Swal.fire({
-        icon: 'error',
-        title: 'Erro',
-        text: msg,
-        confirmButtonColor: '#c91432'
-      });
+      // Captura o erro detalhado que o fetch lança no seu Service
+      const msg = error.detail || error.message || 'Erro ao comunicar com o servidor.';
+      Swal.fire({ icon: 'error', title: 'Erro', text: msg, confirmButtonColor: '#c91432' });
     } finally {
       this.isLoading = false;
       this.cdr.detectChanges();
