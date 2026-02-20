@@ -4,8 +4,9 @@ import com.es.cinema.tickets.persistence.enums.StatusFilme;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "filmes")
@@ -23,13 +24,30 @@ public class Filme {
     @Column(nullable = false)
     private String titulo;
 
-    @Column(columnDefinition = "TEXT")
-    private String descricao;
-
-    @NotNull
-    @Positive
+    @NotBlank
     @Column(nullable = false)
-    private Integer duracao;
+    private String poster;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String backdrop;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String classificacao;
+
+    @Column(nullable = false)
+    private int duracao;
+
+    private List<String> generos;
+
+    private List<String> diretores;
+
+    @NotBlank
+    @Column(columnDefinition = "TEXT")
+    private String sinopse;
+
+    private List<String> elenco;
 
     @NotNull
     @Enumerated(EnumType.STRING)

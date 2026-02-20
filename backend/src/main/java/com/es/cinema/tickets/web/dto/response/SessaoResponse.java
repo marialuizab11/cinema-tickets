@@ -7,13 +7,12 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class SessaoResponseDTO {
-    private Long id;
+public class SessaoResponse {
+    private long id;
+
+    private long filmeId;
+    private long salaId;
+
     private LocalDateTime inicio;
-    private String classificacao;
-    private Long filmeId;
-    private String filmeTitulo;
-    private Long salaId;
-    private int salaNumero;
-    private int totalAssentos;
+    private String tipo;
 }

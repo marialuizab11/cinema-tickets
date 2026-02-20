@@ -1,8 +1,7 @@
 package com.es.cinema.tickets.persistence.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
@@ -17,18 +16,16 @@ public class Sala {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @NotBlank
     @Column(nullable = false, unique = true)
-    private Integer numero;
+    private String nome;
 
-    @NotNull
-    @Positive
     @Column(nullable = false)
-    private Integer capacidade;
+    private int capacidade;
 
     @Override
     public String toString() {
-        return "Sala{id=" + id + ", numero=" + numero + ", capacidade=" + capacidade + "}";
+        return "Sala{id=" + id + ", nome=" + nome + ", capacidade=" + capacidade + "}";
     }
 
     @Override

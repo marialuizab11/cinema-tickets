@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class SessaoRequestDTO {
+public class SessaoRequest {
 
     @NotNull(message = "Filme é obrigatório")
     private Long filmeId;
