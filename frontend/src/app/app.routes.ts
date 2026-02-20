@@ -22,7 +22,7 @@ export const routes: Routes = [
     {
         path: 'cadastro-sessao', 
         component: Sessao,
-        //canActivate: [authGuard]
+        canActivate: [authGuard]
     },
     {
         path: 'movie/:id',
