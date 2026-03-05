@@ -12,7 +12,8 @@ export interface CompraResumo {
   filmePoster: string;
   salaNome: string;
   horario: string;
+  data: string;
   assentosCodigos: string[];
-  assentosIds: string[];
+  assentosIds: number[];
   valorTotal: number;
 }
