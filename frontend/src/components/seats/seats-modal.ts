@@ -81,17 +81,22 @@ export class SeatsModal implements OnInit {
   }
 
   confirmarSelecao() {
+    const dataHora = this.sessaoDados?.inicio ? this.sessaoDados.inicio.split('T') : [];
+    
+    const dataFormatada = dataHora[0] ? dataHora[0].split('-').reverse().join('/') : 'Data não informada';
+    const horarioFormatado = dataHora[1] ? dataHora[1].substring(0, 5) : '--:--'; 
+
     const dadosParaCheckout: CompraResumo = {
       sessaoId: this.sessaoId,
       filmeTitulo: this.filme?.titulo || '',
       filmePoster: this.filme?.poster || '', 
-      data: this.sessaoDados?.data,
-      salaNome: this.sessaoDados?.sala?.nome || '',
-      horario: this.sessaoDados?.horario || '--:--',
+      data: dataFormatada,
+      salaNome: this.sessaoDados?.sala?.nome || 'Sala Padrão',
+      horario: horarioFormatado,
       assentosCodigos: this.selecionados,
       assentosIds: this.assentos
         .filter(a => this.selecionados.includes(a.codigo))
-        .map(a => a.id),
+        .map(a => Number(a.id)),
       valorTotal: this.assentos
         .filter(a => this.selecionados.includes(a.codigo))
         .reduce((acc, a) => acc + a.valor, 0)
@@ -100,5 +105,10 @@ export class SeatsModal implements OnInit {
     localStorage.setItem('checkout_data', JSON.stringify(dadosParaCheckout));
     this.router.navigate(['/checkout']);
     this.fechar.emit();
-}
+  }
+
+  private getPosterUrl(poster?: string): string {
+    if (!poster) return '/images/placeholder.jpg';
+    return poster.startsWith('/') ? poster : '/images/' + poster;
+  }
 }

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { CheckoutService } from '../../general-service/checkout-service/checkout-service';
 import { CompraResumo } from '../../app/core/models/checkout.model';
+import { IngressoService } from '../../general-service/ingresso-service/ingresso.service';
 
 @Component({
   selector: 'app-checkout',
@@ -16,6 +17,7 @@ import { CompraResumo } from '../../app/core/models/checkout.model';
 export class Checkout implements OnInit {
   private readonly router = inject(Router);
   private readonly service = inject(CheckoutService);
+  private readonly ingressoService = inject(IngressoService);
   
   informaçõesModal: any;
   compra?: CompraResumo;
@@ -23,65 +25,59 @@ export class Checkout implements OnInit {
   isProcessing = false;
 
   ngOnInit() {
-  const data = localStorage.getItem('checkout_data');
-
-  if (data) {
-    this.compra = JSON.parse(data);
-    this.informaçõesModal = this.compra; // Mantendo sua variável de controle
-    console.log('Dados recuperados do LocalStorage:', this.compra);
-    
-    // Opcional: Limpar logo após ler para não sobrar lixo no navegador
-    // localStorage.removeItem('checkout_data'); 
-  } else {
-    console.warn('Nenhum dado de compra encontrado no armazenamento.');
-    this.router.navigate(['/']); 
+    const data = localStorage.getItem('checkout_data');
+    if (data) {
+      this.compra = JSON.parse(data);
+      console.log('Dados carregados no Checkout:', this.compra);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
-}
 
   async processarPagamento() {
+    if (this.isProcessing) return;
     this.isProcessing = true;
 
-    const deParaMetodo: any = {
-        'pix': 'PIX',
-        'cartao_credito': 'CARTAO_CREDITO',
-        'cartao_debito': 'CARTAO_DEBITO',
-        'dinheiro': 'DINHEIRO'
-    };
-
     const payload = {
-        sessao_id: this.informaçõesModal.sessaoId,
-        assentos_ids: this.informaçõesModal.assentosIds,
-        valor_esperado: this.informaçõesModal.valorTotal,
-        metodo: deParaMetodo[this.metodoPagamento],
-        token_pagamento: "token_pagamento" 
+      sessaoId: this.compra?.sessaoId,
+      assentosIds: this.compra?.assentosIds,
+      valorEsperado: this.compra?.valorTotal,
+      metodo: this.metodoPagamento.toUpperCase(), 
+      tokenPagamento: "TOKEN_PAGAMENTO_" + Math.random().toString(36).substring(7)
     };
-
-    console.log('Payload para backend ', payload);
+    console.log("Payload enviado: ", payload);
 
     try {
-        const resultado = await this.service.processarPagamento(payload);
-        
-        if (resultado.status === 'aprovado') {
-        Swal.fire({
-            icon: 'success',
-            title: 'Pedido Confirmado!',
-            text: resultado.mensagem,
-            confirmButtonColor: '#28a745'
-        }).then(() => {
-            // Redireciona para tela de sucesso com o ID do ingresso
-            this.router.navigate(['/pedido-confirmado'], { queryParams: { id: resultado.ingresso_id } });
-        });
-        }
-    } catch (error: any) {
-        // Exibe modal explicativo em caso de erro (Saldo insuficiente, assentos ocupados, etc)
-        Swal.fire({
-        icon: 'error',
-        title: 'Pagamento Negado',
-        text: error.message,
+      const resposta = await this.service.processarPagamento(payload);
+      
+      const dadosCompletosParaPDF = {
+        filmeTitulo: this.compra?.filmeTitulo,
+        salaNome: this.compra?.salaNome,
+        data: this.compra?.data,
+        horario: this.compra?.horario,
+        assentosCodigos: this.compra?.assentosCodigos,
+        codigo_voucher: resposta.ingressoId
+      };
+
+      console.log(resposta)
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Pagamento Confirmado!',
+        text: 'Seu ingresso está pronto para download.',
+        confirmButtonText: 'Baixar Ingresso',
         confirmButtonColor: '#c91432'
-        });
+      }).then(() => {
+        this.ingressoService.gerarPDF(dadosCompletosParaPDF);
+        localStorage.removeItem('checkout_data'); 
+        this.router.navigate(['/']); 
+      });
+
+    } catch (error: any) {
+      console.error("Erro retornado: ", error)
+      Swal.fire('Erro', error.message || 'Falha no processamento', 'error');
     } finally {
-        this.isProcessing = false;
+      this.isProcessing = false;
     }
-    }
+  }
 }

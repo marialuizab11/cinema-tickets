@@ -75,6 +75,7 @@
                                 *ngIf="showModalSeats"
                                 [sessaoId]="idSessionSelected!" 
                                 [filme]="movie"
+                                [sessaoDados]="getSessaoAtual()"
                                 (fechar)="showModalSeats = false">
                             </app-seats-modal>
                         }
