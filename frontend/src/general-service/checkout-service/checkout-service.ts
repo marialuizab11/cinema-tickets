@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class CheckoutService {
-  private readonly baseUrl = `${environment.apiUrl}/filmes`;
+  private readonly baseUrl = `${environment.apiUrl}`;
 
   private getHeaders() {
     const token = localStorage.getItem('token');
