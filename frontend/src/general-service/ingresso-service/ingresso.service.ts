@@ -8,66 +8,82 @@ import html2canvas from 'html2canvas';
 export class IngressoService {
 
   async gerarPDF(dados: any) {
-    const div = document.createElement('div');
-    div.style.position = 'absolute';
-    div.style.left = '-9999px';
-    div.innerHTML = this.getTemplate(dados);
-    document.body.appendChild(div);
+    const vouchers = dados.vouchers || dados.ingressosIds || [];
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
 
-    try {
-      const canvas = await html2canvas(div, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-      
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    for (let i = 0; i < vouchers.length; i++) {
+      const div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.left = '-9999px';
+      div.style.width = '550px'; 
+      div.innerHTML = this.getSingleTicketTemplate(dados, i);
+      document.body.appendChild(div);
 
-      pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-      pdf.save(`Ingresso_${dados.filmeTitulo || 'CineApp'}.pdf`);
-    } finally {
-      document.body.removeChild(div);
+      try {
+        const canvas = await html2canvas(div, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+      } finally {
+        document.body.removeChild(div);
+      }
     }
+
+    pdf.save(`Ingressos_${dados.filmeTitulo || 'Cinema'}.pdf`);
   }
 
-  private getTemplate(dados: any): string {
-    const filme = dados.filmeTitulo || 'Filme';
-    const sala = dados.salaNome || 'Sala Principal';
-    const data = dados.data || '--/--/----';
-    const hora = dados.horario || '--:--';
-    const assentos = Array.isArray(dados.assentosCodigos) 
-                     ? dados.assentosCodigos.join(', ') 
-                     : (dados.assentosCodigos || 'N/A');
-    
-    const voucher = dados.codigo_voucher || dados.voucher || 'ERRO-VOUCHER';
+  private getSingleTicketTemplate(dados: any, index: number): string {
+    const vouchers = dados.vouchers || dados.ingressosIds || [];
+    const assentos = dados.assentosCodigos || [];
+    const voucher = vouchers[index];
+    const assento = assentos[index] || 'N/A';
 
     return `
-      <div style="width: 500px; padding: 40px; border: 4px dashed #c91432; background: white; font-family: 'Arial', sans-serif;">
-        <div style="text-align: center; border-bottom: 3px solid #ffc107; padding-bottom: 20px;">
-          <h1 style="color: #c91432; margin: 0; font-size: 32px; letter-spacing: -1px;">CINE APP</h1>
-          <p style="color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Comprovante de Entrada</p>
-        </div>
-        
-        <div style="margin-top: 30px;">
-          <h2 style="color: #333; font-size: 26px; margin-bottom: 10px; border-left: 5px solid #ffc107; padding-left: 15px;">${filme}</h2>
-          <div style="color: #444; font-size: 16px; line-height: 1.8; margin-left: 20px;">
-            <p style="margin: 5px 0;"><strong style="color: #c91432;">SALA:</strong> ${sala}</p>
-            <p style="margin: 5px 0;"><strong style="color: #c91432;">DATA E HORA:</strong> ${data} às ${hora}</p>
-            <p style="margin: 5px 0;"><strong style="color: #c91432;">ASSENTOS:</strong> ${assentos}</p>
+      <div style="width: 550px; background: white; border-radius: 12px; overflow: hidden; font-family: sans-serif; border: 2px solid #eee;">
+        <div style="display: flex;">
+          <div style="background: #c91432; width: 50px; display: flex; align-items: center; justify-content: center;">
+            <h2 style="color: white; transform: rotate(-90deg); white-space: nowrap; font-size: 20px; letter-spacing: 4px; margin: 0;">CINE APP</h2>
           </div>
-        </div>
 
-        <div style="margin-top: 40px; background: #fffbef; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid #ffc107; position: relative;">
-          <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; color: #ffc107; font-size: 10px; font-weight: bold;">VALIDAÇÃO DIGITAL</div>
-          <p style="margin: 0; color: #888; font-size: 12px; font-weight: bold; text-transform: uppercase;">Código do Voucher</p>
-          <h3 style="margin: 15px 0; color: #c91432; font-size: 32px; letter-spacing: 5px; font-family: 'Courier New', monospace; font-weight: 900;">
-            ${voucher}
-          </h3>
-          <p style="margin: 0; color: #666; font-size: 12px; font-style: italic;">Apresente este QR-Code ou código na portaria.</p>
-        </div>
-        
-        <div style="margin-top: 30px; text-align: center; color: #bbb; font-size: 10px;">
-          Emitido em: ${new Date().toLocaleString('pt-BR')}
+          <div style="flex: 1; padding: 25px;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #f4f4f4; margin-bottom: 15px; padding-bottom: 10px;">
+              <h2 style="margin: 0; color: #333; font-size: 22px;">${dados.filmeTitulo}</h2>
+              <span style="background: #ffc107; color: #000; padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: bold; height: fit-content;">${index + 1}/${vouchers.length}</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <small style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 10px;">Sala</small>
+                <div style="font-weight: bold; color: #333;">${dados.salaNome}</div>
+              </div>
+              <div>
+                <small style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 10px;">Assento</small>
+                <div style="font-weight: bold; color: #c91432; font-size: 20px;">${assento}</div>
+              </div>
+              <div>
+                <small style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 10px;">Data</small>
+                <div style="font-weight: bold;">${dados.data}</div>
+              </div>
+              <div>
+                <small style="color: #999; text-transform: uppercase; font-weight: bold; font-size: 10px;">Horário</small>
+                <div style="font-weight: bold;">${dados.horario}</div>
+              </div>
+            </div>
+
+            <div style="margin-top: 25px; padding: 15px; background: #fffbef; border: 2px dashed #ffc107; border-radius: 8px; text-align: center;">
+              <div style="color: #666; font-size: 10px; font-weight: bold; margin-bottom: 5px;">VOUCHER DE ACESSO</div>
+              <div style="font-family: monospace; font-size: 22px; color: #c91432; font-weight: bold; letter-spacing: 2px;">
+                ${voucher}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;

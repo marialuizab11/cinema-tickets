@@ -43,20 +43,29 @@ export class Checkout implements OnInit {
       assentosIds: this.compra?.assentosIds,
       valorEsperado: this.compra?.valorTotal,
       metodo: this.metodoPagamento.toUpperCase(), 
-      tokenPagamento: "TOKEN_PAGAMENTO_" + Math.random().toString(36).substring(7)
+      tokenPagamento: "TOKEN_PAGAMENTO_" + Math.random().toString(10).substring(7)
     };
     console.log("Payload enviado: ", payload);
 
     try {
       const resposta = await this.service.processarPagamento(payload);
-      
+
+      if(!resposta.ingressosIds){
+        Swal.fire({
+          icon: 'error',
+          title: 'Voucher não encontrado',
+        })
+
+        return;
+      }
+
       const dadosCompletosParaPDF = {
         filmeTitulo: this.compra?.filmeTitulo,
         salaNome: this.compra?.salaNome,
         data: this.compra?.data,
         horario: this.compra?.horario,
-        assentosCodigos: this.compra?.assentosCodigos,
-        codigo_voucher: resposta.ingressoId
+        assentosCodigos: this.compra?.assentosCodigos || [],
+        vouchers: resposta.ingressosIds || []
       };
 
       console.log(resposta)
